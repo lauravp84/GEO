@@ -1,5 +1,5 @@
 // Configurações e variáveis globais
-const API_KEY = ''; // Será preenchido pelo backend por segurança
+const API_KEY = 'AIzaSyCgoF4TTaF7Z5gVq3b5F9rCrDoZ_cf_Wck'; // Será preenchido pelo backend por segurança
 let studentData = null;
 let currentTurma = null;
 let accessLog = [];
@@ -58,7 +58,8 @@ async function handleLogin(e) {
 }
 
 // Carregar dados do aluno da planilha
-async function loadStudentData(email, dre, turma) {
+const data = await fetchRealStudentData(email, dre, turma);
+ {
     try {
         // Em um ambiente real, isso seria feito pelo backend
         // Aqui estamos simulando para o protótipo
@@ -97,55 +98,69 @@ async function loadStudentData(email, dre, turma) {
     }
 }
 
-// Função para simular busca de dados na planilha (em produção seria substituída pela API real)
-async function fetchMockStudentData(email, dre, turma) {
-    // Simular delay de rede
-    await new Promise(resolve => setTimeout(resolve, 1000));
+/// Função para acessar dados reais da planilha via API do Google Sheets
+async function fetchRealStudentData(email, dre, turma) {
+  try {
+    // Carregar a API do Google
+    await gapi.client.init({
+      apiKey: API_KEY,
+      discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"]
+    } );
     
-    // Dados de exemplo baseados na planilha compartilhada
-    const mockDataTurmaA = [
-        {
-            email: 'vitxriaaquino@gmail.com',
-            dre: '122047778',
-            nome: 'AMANDA BLAJACKIS GAVIAO',
-            presenca: 10,
-            falta: 16,
-            porcentagem: '38%',
-            diasFalta: ['26/03', '02/04', '09/04', '16/04']
-        },
-        {
-            email: 'andreluiz.detsi@gmail.com',
-            dre: '120103073',
-            nome: 'ANDRE LUIZ FERREIRA DETSI',
-            presenca: 13,
-            falta: 13,
-            porcentagem: '50%',
-            diasFalta: ['19/03', '26/03', '02/04']
-        }
-        // Mais dados seriam adicionados aqui
-    ];
+    // Selecionar a planilha correta
+    const spreadsheetId = CONFIG.spreadsheets[turma].id;
+    const range = CONFIG.spreadsheets[turma].range;
     
-    const mockDataTurmaB = [
-        {
-            email: 'alicevhanna@gmail.com',
-            dre: '123452641',
-            nome: 'ALICE VIEIRA HANNA',
-            presenca: 13,
-            falta: 13,
-            porcentagem: '50%',
-            diasFalta: ['26/03', '02/04', '09/04']
-        },
-        {
-            email: 'alines.silva2004.07@gmail.com',
-            dre: '122134282',
-            nome: 'ALINE DA SILVA E SILVA',
-            presenca: 13,
-            falta: 13,
-            porcentagem: '50%',
-            diasFalta: ['19/03', '26/03', '02/04']
-        }
-        // Mais dados seriam adicionados aqui
-    ];
+    // Fazer a requisição
+    const response = await gapi.client.sheets.spreadsheets.values.get({
+      spreadsheetId: spreadsheetId,
+      range: range
+    });
+    
+    // Processar os dados
+    const rows = response.result.values;
+    if (!rows || rows.length === 0) {
+      return null;
+    }
+    
+    // Encontrar o aluno pelo email e DRE
+    for (let i = 1; i < rows.length; i++) {
+      const row = rows[i];
+      if (row[0].toLowerCase() === email.toLowerCase() && row[1] === dre) {
+        return {
+          email: row[0],
+          dre: row[1],
+          nome: row[2],
+          presenca: row[3],
+          falta: row[4],
+          porcentagem: row[5],
+          diasFalta: getDiasFalta(rows[0], row)
+        };
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Erro ao acessar a API:', error);
+    return null;
+  }
+}
+
+// Função auxiliar para extrair os dias com faltas
+function getDiasFalta(headerRow, dataRow) {
+  const diasFalta = [];
+  
+  // Começar a partir da coluna 6 (após email, dre, nome, presenca, falta, porcentagem)
+  for (let i = 6; i < headerRow.length; i++) {
+    // Se o valor for "F" ou similar, adicionar o dia à lista
+    if (dataRow[i] === "F" || dataRow[i] === "f") {
+      diasFalta.push(headerRow[i]);
+    }
+  }
+  
+  return diasFalta;
+}
+
     
     // Selecionar dados da turma correta
     const mockData = turma === 'A' ? mockDataTurmaA : mockDataTurmaB;
