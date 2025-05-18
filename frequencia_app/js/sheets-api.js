@@ -1,6 +1,6 @@
 // Configuração para integração com Google Sheets API
 const CONFIG = {
-  apiKey: null, // Será configurado pelo backend
+  apiKey: null, // Será preenchido pelo API_KEY no app.js
   discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"],
   spreadsheets: {
     'A': {
@@ -13,6 +13,7 @@ const CONFIG = {
     }
   }
 };
+
 
 // Classe para gerenciar a integração com Google Sheets
 class GoogleSheetsManager {
