@@ -181,12 +181,12 @@ function getDiasFalta(headerRow, dataRow) {
 // Exibir dashboard com dados do aluno
 function displayDashboard() {
     // Atualizar elementos do DOM
-    document.getElementById('student-name').textContent = studentData.nome;
-    document.getElementById('student-dre').textContent = studentData.dre;
+    document.getElementById('student-name').textContent = studentData.nome || studentData.NOME || '';
+    document.getElementById('student-dre').textContent = studentData.dre || studentData.DRE || '';
     document.getElementById('student-turma').textContent = 'Turma ' + currentTurma;
-    document.getElementById('presence-count').textContent = studentData.presenca;
-    document.getElementById('absence-count').textContent = studentData.falta;
-    document.getElementById('percentage').textContent = studentData.porcentagem;
+    document.getElementById('presence-count').textContent = studentData.presenca || studentData.PRESENCA || '0';
+    document.getElementById('absence-count').textContent = studentData.falta || studentData.FALTA || '0';
+    document.getElementById('percentage').textContent = studentData.porcentagem || studentData.PORCENTAGEM || '0%';
     
     // Exibir dias com faltas
     const absenceDaysContainer = document.getElementById('absence-days');
