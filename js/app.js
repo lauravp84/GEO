@@ -57,19 +57,25 @@ async function handleLogin(e) {
     }
 }
 
-// Carregar dados do aluno da planilha
+/// Carregar dados do aluno da planilha via Google Apps Script
 async function loadStudentData(email, dre, turma) {
     try {
-        // Em um ambiente real, isso seria feito pelo backend
-        // Aqui estamos simulando para o protótipo
-        
-        // Simular requisição à API do Google Sheets
+        // Mostrar mensagem de carregamento
         showMessage('Carregando dados da Turma ' + turma + '...', 'info');
         
-        // Em produção, isso seria substituído por uma chamada real à API
-        const data = await fetchRealStudentData(email, dre, turma);
+        // Selecionar o URL do script correto com base na turma
+        const scriptUrl = turma === 'A' 
+            ? 'https://script.google.com/macros/s/AKfycbzYNkwBnHs2y5NwjtKRn1QSvmuccojh66J3keYEAPxk6Y3EQ944lDmIJNaPS0GPiyWT/exec'
+            : 'https://script.google.com/macros/s/AKfycbwJ1C-_oy3gafi-Epn9R-tn6XUVwf4NXqsAQ61XDytX3gL7foTocc2Dgl2avOn1vQ-etA/exec';
         
-        if (!data) {
+        // Construir a URL com parâmetros
+        const url = `${scriptUrl}?email=${encodeURIComponent(email )}&dre=${encodeURIComponent(dre)}`;
+        
+        // Fazer a requisição
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (!data || data.error) {
             showMessage('Usuário não encontrado. Verifique suas credenciais e turma selecionada.', 'error');
             return;
         }
@@ -96,6 +102,7 @@ async function loadStudentData(email, dre, turma) {
         showMessage('Erro ao carregar dados. Tente novamente mais tarde.', 'error');
     }
 }
+
 
 // Função para simular busca de dados na planilha (em produção seria substituída pela API real)
 async function fetchRealStudentData(email, dre, turma) {
