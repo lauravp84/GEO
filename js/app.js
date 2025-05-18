@@ -1,5 +1,5 @@
 // Configurações e variáveis globais
-const API_KEY = ''; // Será preenchido pelo backend por segurança
+const API_KEY = 'AIzaSyCgoF4TTaF7Z5gVq3b5F9rCrDoZ_cf_Wck'; // Será preenchido pelo backend por segurança
 let studentData = null;
 let currentTurma = null;
 let accessLog = [];
